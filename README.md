@@ -1,1 +1,1 @@
-# image-converter
+# Image converter
