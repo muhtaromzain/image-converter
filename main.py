@@ -1,79 +1,78 @@
-from PIL import Image
-import PIL
-import os
-import magic
-import glob
+from tkinter import *
+from tkinter import ttk
+from tkinter import filedialog
+from converter import converter
 
+# global variable
+gui = Tk()
+gui.geometry("400x60")
+gui.title("Image converter")
 
-# set global variables
-path = os.getcwd() + '\\image'
-convertPath = os.getcwd() + '\\converted'
+folderPathFrom = StringVar()
+folderPathTo   = StringVar()
 
 class mainWindow():
-    def run(self):
-        images = self.getListImages()
-
-        for image in images:
-            # check if image file
-            mime = self.checkMimeType(image).split('/')
-
-            if (mime[0] == 'image'):
-                # accept only jpg, png and webp
-                if (mime[1] == 'jpeg' or mime[1] == 'png' or mime[1] == 'webp'):
-                    # check if webp
-                    if (mime[1] != 'webp'):
-                        # convert image
-                        self.convertImage(image)
-                        print('convert ' + image)
-                    else:
-                        # check if mime is not same with ext name
-                        orgImageExt = image.split('.')[1]
-                        if (orgImageExt != mime[1]):
-                            # rename and save the with correct ext
-                            print(image + ' should rename')
-
-    def checkMimeType(self, image, isOrigin = True):
-        # mime reader
-        mime = magic.Magic(mime=True)
-        if (isOrigin):
-            convertedPath = self.convertImagePath(image)
+    def getFolderPath(self, isFrom = True):
+        folder_selected = filedialog.askdirectory()
+        if (isFrom):
+            folderPathFrom.set(folder_selected)
         else:
-            convertedPath = self.destinationPath(image)
-        mimeType = mime.from_file(convertedPath)
-        return mimeType
+            folderPathTo.set(folder_selected)
 
-    def convertImagePath(self, image):
-        return path + "\\" + image
+    def getFolderPathFrom(self):
+        self.getFolderPath()
 
-    def destinationPath(self, image, image_type = ''):
-        if (image_type == 'jpg' or image_type == 'jpeg' or image_type == 'png' or image_type == 'webp'):
-            ext = '.' + image_type
-        else :
-            ext = '.webp'
+    def getFolderPathTo(self):
+        self.getFolderPath(False)
+
+    def process(self):
+        folderFrom = folderPathFrom.get()
+        folderTo   = folderPathTo.get()
+
+        if (folderFrom == "" and folderTo == ""):
+            print("Please select your from directory and destination directory")
+        elif (folderFrom == ""):
+            print("Please select your from directory")
+        elif (folderTo == ""):
+            print("Please select your destination directory")
+        else:
+            print("Convert image from", folderFrom, " to ", folderTo)
+            converter(folderFrom, folderTo).run()
+    
+    def view(self):
+        # label from path
+        labelFrom = Label(gui , text="From path")
+        labelFrom.grid(row=0, column=0)
+        # form directory from path
+        destinationPath = Entry(gui, textvariable=folderPathFrom, state='disabled')
+        destinationPath.grid(row=0, column=1)
         
-        image = image.split('.')[0]
-        return convertPath + "\\" + image + ext
+        # label destination path
+        formPathFrom = Label(gui , text="Destination path")
+        formPathFrom.grid(row=1, column=0)
+        # form directory destination path
+        formPathDestination = Entry(gui, textvariable=folderPathTo, state='disabled')
+        formPathDestination.grid(row=1, column=1)
 
-    def getListImages(self):
-        dirList = os.listdir(path)
-        return dirList
+        # button browse dir from path
+        btnBrowseFrom = ttk.Button(gui, text="Browse Folder", command=self.getFolderPathFrom)
+        btnBrowseFrom.grid(row=0, column=2)
+        # button browse dir destination path
+        btnBrowseDestination = ttk.Button(gui, text="Browse Folder", command=self.getFolderPathTo)
+        btnBrowseDestination.grid(row=1, column=2)
 
-    def convertImage(self, image, image_type = ''):
-        if (image_type == 'jpg' or image_type == 'jpeg' or image_type == 'png' or image_type == 'webp'):
-            ext = image_type
-        else :
-            ext = 'webp'
-
-        convertImage = Image.open(self.convertImagePath(image))
-        convertImage = convertImage.convert('RGB')
-
-        try:
-            convertImage.save(self.destinationPath(image), ext)
-            return True
-        except Exception as e:
-            return e
+        # button start convert
+        btnStart = ttk.Button(gui , text="Start", command=self.process)
+        btnStart.grid(row=0, column=3, rowspan=3, columnspan=3, ipady=10, ipadx=10)
 
 
 if __name__ == "__main__":
-    app = mainWindow()
-    app.run()
+    # converter().run()
+    window = mainWindow()
+
+    # load view
+    window.view()
+
+    # start apps
+    gui.resizable(0,0)
+    gui.mainloop()
