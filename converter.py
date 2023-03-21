@@ -43,14 +43,14 @@ class converter():
                                 print('Rename and copy ' + image)
                                 src = self.path + '\\' + image
                                 dst = self.convertPath + '\\' + image.split('.')[0] + '.webp'
-                                shutil.copyfile(src, dst)
+                                shutil.copy2(src, dst)
                                 listImage.append(image.split('.')[0])
                             else:
                                 # move and copy current webp image
                                 print('Move and copy ' + image)
                                 src = self.path + '\\' + image
                                 dst = self.convertPath + '\\' + image
-                                shutil.copyfile(src, dst)
+                                shutil.copy2(src, dst)
                                 listImage.append(image.split('.')[0])
 
             # open dir when complete
