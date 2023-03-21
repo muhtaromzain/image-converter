@@ -18,35 +18,50 @@ class converter():
         self.convertPath = convertPath
     
     def run(self):
-        images = self.getListImages()
+        listImage = []
+        try:
+            images = self.getListImages()
 
-        for image in images:
-            # check if image file
-            mime = self.checkMimeType(image).split('/')
+            for image in images:
+                # check if image file
+                mime = self.checkMimeType(image).split('/')
 
-            if (mime[0] == 'image'):
-                # accept only jpg, png and webp
-                if (mime[1] == 'jpeg' or mime[1] == 'png' or mime[1] == 'webp'):
-                    # check if webp
-                    if (mime[1] != 'webp'):
-                        # convert image
-                        print('convert ' + image)
-                        self.convertImage(image)
-                    else:
-                        # check if mime is not same with ext name
-                        orgImageExt = image.split('.')[1]
-                        if (orgImageExt != mime[1]):
-                            # rename and save the with correct ext
-                            print('Rename and copy ' + image)
-                            src = self.path + '\\' + image
-                            dst = self.convertedPath + '\\' + image.split('.')[0] + '.webp'
-                            shutil.copyfile(src, dst)
+                if (mime[0] == 'image'):
+                    # accept only jpg, png and webp
+                    if (mime[1] == 'jpeg' or mime[1] == 'png' or mime[1] == 'webp'):
+                        # check if webp
+                        if (mime[1] != 'webp'):
+                            # convert image
+                            print('convert ' + image)
+                            self.convertImage(image)
+                            listImage.append(image.split('.')[0])
                         else:
-                            # move and copy current webp image
-                            print('Move and copy ' + image)
-                            src = self.path + '\\' + image
-                            dst = self.convertedPath + image
-                            shutil.copyfile(src, dst)
+                            # check if mime is not same with ext name
+                            orgImageExt = image.split('.')[1]
+                            if (orgImageExt != mime[1]):
+                                # rename and save the with correct ext
+                                print('Rename and copy ' + image)
+                                src = self.path + '\\' + image
+                                dst = self.convertPath + '\\' + image.split('.')[0] + '.webp'
+                                shutil.copyfile(src, dst)
+                                listImage.append(image.split('.')[0])
+                            else:
+                                # move and copy current webp image
+                                print('Move and copy ' + image)
+                                src = self.path + '\\' + image
+                                dst = self.convertPath + '\\' + image
+                                shutil.copyfile(src, dst)
+                                listImage.append(image.split('.')[0])
+
+            # open dir when complete
+            os.startfile(self.convertPath)
+        except Exception as e:
+            print(e)
+            print('rollback')
+            if (listImage):
+                print(listImage)
+                print(list(set(listImage)))
+                self.remove(list(set(listImage)))
 
     def checkMimeType(self, image, isOrigin = True):
         # mime reader
@@ -70,8 +85,13 @@ class converter():
         image = image.split('.')[0]
         return self.convertPath + "\\" + image + ext
 
-    def getListImages(self):
-        dirList = os.listdir(self.path)
+    def getListImages(self, isFrom = True):
+        if (isFrom):
+            dirPath = self.path
+        else:
+            dirPath = self.convertPath
+        
+        dirList = os.listdir(dirPath)
         return dirList
 
     def convertImage(self, image, image_type = ''):
@@ -89,6 +109,7 @@ class converter():
         except Exception as e:
             return e
 
-# if __name__ == "__main__":
-    # app = converter()
-    # app.run()
+    def remove(self, listOfImage):
+        if (listOfImage):
+            for image in listOfImage:
+                os.remove(self.convertPath + '\\' + image.split('.')[0] + '.webp')
